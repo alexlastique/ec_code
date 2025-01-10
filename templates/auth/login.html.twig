@@ -2,46 +2,111 @@
 
 {% block title %}Log in!{% endblock %}
 
+
 {% block body %}
+
     <div class="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
+
         <div class="card max-w-[370px] w-full">
-            <form action="{{ path('auth.login') }}" class="card-body flex flex-col gap-5 p-10" id="sign_in_form" method="post">
+
+            <form class="card-body flex flex-col gap-5 p-10" id="sign_in_form" method="post">
+
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
                 <div class="text-center mb-2.5">
-                    <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">
-                        Connexion
-                    </h3>
+                    <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">Connexion</h3>
+
                     <div class="flex items-center justify-center font-medium">
-                       <span class="text-2sm text-gray-700 me-1.5">
-                        Pas de compte ?
-                       </span>
-                        <a class="text-2sm link" href="{{ path('auth.register') }}">
-                            Inscription
-                        </a>
+                        <span class="text-2sm text-gray-700 me-1.5">Pas de compte ?</span>
+                        <a class="text-2sm link" href="{{ path('auth.register') }}">Inscription</a>
                     </div>
+
                 </div>
+
                 <div class="flex flex-col gap-1">
+
                     <label for="email" class="form-label font-normal text-gray-900">Email</label>
                     <input id="email" type="text" name="_username" class="input" placeholder="Adresse email" />
+
                 </div>
+
                 <div class="flex flex-col gap-1">
+
                     <div class="flex items-center justify-between gap-1">
-                        <label class="form-label font-normal text-gray-900">
-                            Mot de passe
-                        </label>
+
+                        <label class="form-label font-normal text-gray-900">Mot de passe</label>
+
                     </div>
+
                     <div class="input" data-toggle-password="true">
-                        <input name="_password" placeholder="Mot de passe" type="password" value=""/>
+
+                        <input id="password" name="_password" placeholder="Mot de passe" type="password" value=""/>
+
                         <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
-                            <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
-                            </i>
-                            <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
-                            </i>
+
+                            <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"></i>
+                            <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"></i>
+
                         </button>
+
                     </div>
                 </div>
+
                 <button type="submit" class="btn btn-primary flex justify-center grow">Connexion</button>
+
             </form>
+
         </div>
     </div>
+{% endblock %}
+
+{% block script %}
+<script> 
+    document.getElementById('sign_in_form').addEventListener("submit",function(event) {
+        event.preventDefault();
+
+        password = document.getElementById('password');
+        mail = document.getElementById('email');
+
+        if (password.value == "") {
+
+            alert('Le mot de passe est vide');
+
+        }else if (mail.value == "") {
+
+            alert('Le mail est vide');
+
+        } else {
+
+            fetch('{{ path('auth.loginform') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    password: password.value,
+                    mail: mail.value,
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.ok) {
+                        alert(data.message);
+                        window.location.href = '{{ path('app.home') }}';
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur :', error.message);
+                });
+
+        }
+    })
+</script>
 {% endblock %}

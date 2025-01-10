@@ -1,0 +1,16 @@
+<div id="commentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:20px; border-radius:8px; width:400px; text-align:center;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);">
+        <div id="modalContent">
+            <form id="formCommentaire">
+                <h2>Commentaire</h2>
+                <p>Saisissez votre commentaire:</p>
+                <textarea id="commentInput" style="width:100%; height:150px;"></textarea>
+                <button onclick="closeModal()">Envoyer</button>
+                <input type="hidden" id="bookId" value="0">
+            </form>
+        </div>
+        <button onclick="closeModal()" style="margin-top:20px;">Fermer</button>
+        <div id="coment">
+        </div>
+    </div>
+</div>

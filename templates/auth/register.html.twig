@@ -5,62 +5,145 @@
 {% block body %}
     <!-- Page -->
     <div class="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
+
         <div class="card max-w-[370px] w-full">
-            <form action="#" class="card-body flex flex-col gap-5 p-10" id="sign_up_form" method="post">
-                <div class="text-center mb-2.5">
-                    <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">
-                        Inscription
-                    </h3>
-                    <div class="flex items-center justify-center">
-                        <span class="text-2sm text-gray-700 me-1.5">
-                        Vous avez déjà un compte ?
-                        </span>
-                        <a class="text-2sm link" href="{{ path('auth.login') }}">
-                            Me connecter
-                        </a>
-                    </div>
+
+            <div class="text-center mb-2.5">
+
+                <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">Inscription</h3>
+
+                <div class="flex items-center justify-center">
+
+                    <span class="text-2sm text-gray-700 me-1.5">Vous avez déjà un compte ?</span>
+
+                    <a class="text-2sm link" href="{{ path('auth.login') }}">Me connecter</a>
+
+                </div>
+
+            </div>
+
+            <form class="card-body flex flex-col gap-5 p-10" id="sign_up_form" method="post">
+
+                <div class="flex flex-col gap-1">
+
+                    <label class="form-label text-gray-900">Email</label>
+
+                    <input id="user_email" class="input" name="user_email" placeholder="Adresse email" type="text" value=""/>
+
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label class="form-label text-gray-900">Email</label>
-                    <input class="input" name="user_email" placeholder="Adresse email" type="text" value=""/>
-                </div>
-                <div class="flex flex-col gap-1">
+
                     <label class="form-label font-normal text-gray-900">Mot de passe</label>
+
                     <div class="input" data-toggle-password="true">
-                        <input name="user_password" placeholder="Mot de passe" type="password" value="">
+
+                        <input id="password" name="user_password" placeholder="Mot de passe" type="password" value="">
+
                         <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
-                            <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
-                            </i>
-                            <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
-                            </i>
+
+                            <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"></i>
+                            <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"></i>
+
                         </button>
+
                         </input>
+
                     </div>
+
                 </div>
+
                 <div class="flex flex-col gap-1">
-                    <label class="form-label font-normal text-gray-900">
-                        Confirmer le mot de passe
-                    </label>
+
+                    <label class="form-label font-normal text-gray-900">Confirmer le mot de passe</label>
+
                     <div class="input" data-toggle-password="true">
-                        <input name="user_password" placeholder="Confirmez le mot de passe" type="password" value=""/>
+
+                        <input id="password2" name="user_password2" placeholder="Confirmez le mot de passe" type="password" value=""/>
+
                         <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
-                            <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
-                            </i>
-                            <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
-                            </i>
+
+                            <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"></i>
+
+                            <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"></i>
+
                         </button>
+
                     </div>
+
                 </div>
+
                 <label class="checkbox-group">
+
                     <input class="checkbox checkbox-sm" name="check" type="checkbox" value="1"/>
-                    <span class="checkbox-label">
-                        J'accepte les <a class="text-2sm link" href="#">GCU</a>
-                    </span>
+                    <span class="checkbox-label">J'accepte les <a class="text-2sm link" href="{{ path('app.GCU') }}">GCU</a></span>
+
                 </label>
+
                 <button class="btn btn-primary flex justify-center grow">Inscription</button>
+
             </form>
         </div>
     </div>
     <!-- End of Page -->
+{% endblock %}
+
+{% block script %}
+<script> 
+    document.getElementById('sign_up_form').addEventListener("submit",function(event) {
+        event.preventDefault();
+
+        password = document.getElementById('password');
+        password2 = document.getElementById('password2');
+        mail = document.getElementById('user_email');
+        GCU = document.querySelector('input[name="check"]').checked;
+        console.log(password.value);
+        console.log(password2.value);
+        console.log(mail.value);
+        console.log(GCU);
+
+        if (!document.querySelector('input[name="check"]').checked) {
+
+            alert('Merci de cocher la case pour accepter les GCU');
+
+        }else if (password.value == "" || password.value != password2.value) {
+
+            alert('Les mots de passe ne correspondent pas ou sont vide');
+
+        }else if (mail.value == "") {
+
+            alert('Le mail est vide');
+
+        } else {
+
+            fetch('{{ path('auth.registerform') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    password: password.value,
+                    mail: mail.value,
+                    GCU: GCU,
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.ok) {
+                        console.log('Registration successful:', data.message);
+                    } else {
+                        console.log('Error during registration:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error.message);
+                });
+        }
+    })
+</script>
 {% endblock %}

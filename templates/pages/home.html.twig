@@ -29,9 +29,7 @@
                                 </p>
                             </div>
                             <div class="flex justify-center">
-                                <a class="btn btn-dark" href="#" data-modal-toggle="#book_modal">
-                                    Ajouter une lecture
-                                </a>
+                                <a class="btn btn-dark" href="#" data-modal-toggle="#book_modal">Ajouter une lecture</a>
                             </div>
                         </div>
                     </div>
@@ -55,4 +53,152 @@
         </div>
         <!-- end: grid -->
     </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+
+        document.getElementById('form_book').addEventListener("submit",function(event) {
+            event.preventDefault();
+            var title = document.getElementById('title').value;
+            var description = document.getElementById('description').value;
+            var rating = document.getElementById('rating').value;
+            var finish = document.getElementById('finish').checked;
+            console.log(title, description, rating, finish);
+
+            fetch('{{ path('app.book') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: title,
+                    description: description,
+                    rating: rating,
+                    finish: finish,
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.ok) {
+
+                        var trueDescription = data.description;
+                        var category = data.category;
+                        var date = data.date;
+
+                        let modalEl = document.querySelector('#book_modal');
+                        let modal = KTModal.getInstance(modalEl);
+                        modal.hide();
+
+
+                        if (finish) {
+        
+                            let table = document.getElementById("finish-table").getElementsByTagName('tbody')[0];
+                            let newRow = table.insertRow();
+                            let cell1 = newRow.insertCell(0);
+                            let cell2 = newRow.insertCell(1);
+                            cell1.innerHTML = `
+                                <div class="flex flex-col gap-2">
+                                    <a class="leading-none font-medium text-sm text-gray-900 hover:text-primary" href="#">`+title+`</a>
+                                    <span class="text-2sm text-gray-700 font-normal leading-3">`+trueDescription+`</span>
+                                </div>
+                            `;
+                            console.log(category);
+                            cell2.textContent = category;
+                            let cell3 = newRow.insertCell(2);
+                            var star = `
+                                <div class="rating">`;
+                            for (let i = 0; i <5; i++) {
+                                final = rating-i;
+                                if (final < 0) {
+                                    star += `
+                                        <div class="rating-label">
+                                        <i class="rating-on ki-solid ki-star text-base leading-none"></i>
+                                        <i class="rating-off ki-outline ki-star text-base leading-none"></i>
+                                    </div>`;
+                                } else if (final < 1 ) {
+                                    star += `
+                                        <div class="rating-label indeterminate">
+                                            <i class="rating-on ki-solid ki-star text-base leading-none" style="width: 50.0%"></i>
+                                            <i class="rating-off ki-outline ki-star text-base leading-none"></i>
+                                        </div>`;
+                                } else {
+                                    star += `
+                                        <div class="rating-label checked">
+                                            <i class="rating-on ki-solid ki-star text-base leading-none"></i>
+                                            <i class="rating-off ki-outline ki-star text-base leading-none"></i>
+                                        </div>`;
+                                }
+                            }
+                            star += `
+                                </div>
+                            `;
+                            cell3.innerHTML = star;
+
+                        } else {
+                            let table = document.getElementById("not-finish-table").getElementsByTagName('tbody')[0];
+
+                            let newRow = table.insertRow();
+
+                            let cell1 = newRow.insertCell(0);
+                            let cell2 = newRow.insertCell(1);
+
+                            cell1.innerHTML = `
+                                <div class="flex flex-col gap-2">
+                                    <a class="leading-none font-medium text-sm text-gray-900 hover:text-primary" href="#">`+title+`</a>
+                                    <span class="text-2sm text-gray-700 font-normal leading-3">`+trueDescription+`</span>
+                                </div>
+                            `;
+                            cell2.className = "text-end";
+
+                            const rawDate = data.date.date;
+
+                            const Dateform = new Date(rawDate);
+
+                            const formattedDate = Dateform.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric'}) + ' à ' + Dateform.toLocaleTimeString('fr-FR', {
+                                hour: '2-digit', minute: '2-digit', hour12: false
+                                });
+
+                            cell2.textContent = formattedDate;
+
+                        }
+                    
+                    } else {
+                        console.log(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error.message);
+                });
+
+        })
+
+        var options = {
+            series: [
+                {
+                    data: {{categoryValue|raw}},
+                }
+            ],
+            chart: {
+                height: 350,
+                type: 'radar',
+            },
+            fill: {
+                opacity: 0.5,
+                colors: ['#3060ff']
+            },
+            xaxis: {
+                categories: {{ category|raw }}
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#radar-chart"), options);
+        chart.render();
+
+    </script>
 {% endblock %}
